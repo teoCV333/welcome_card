@@ -138,9 +138,9 @@ def slide_to_image(slide, slide_width, slide_height):
 
 if __name__ == "__main__":
     # Variables para prueba
-    file_path = "C:/dev projects/haceb/tarjetaBienvenida/welcomecard/plantilla_bienvenida.pptx"
-    text_to_replace = "Nombre"
-    new_text = "Mateo Carvajal Vergara"
+    file_path = "path"
+    text_to_replace = "text to replace"
+    new_text = "new text"
 
     result = main(file_path, text_to_replace, new_text)
     print(result)
