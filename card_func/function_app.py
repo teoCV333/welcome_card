@@ -131,6 +131,10 @@ def slide_to_image(slide, slide_width, slide_height):
     return img
 
 if __name__ == "__main__":
+    # Variables para prueba
+    file_path = ""
+    text_to_replace = ""
+    new_text = ""
 
     result = main(file_path, text_to_replace, new_text)
     print(result)
