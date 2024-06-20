@@ -1,24 +1,49 @@
 import io
 import logging
+import os
+import uuid
 from pptx import Presentation
 from pptx.util import Pt
 from pptx.dml.color import RGBColor
 from PIL import Image, ImageDraw, ImageFont
 from datetime import datetime
 
+def sanitize_input(input_string):
+    """
+    Sanitiza la entrada para prevenir ataques de inyección.
+    """
+    return input_string.replace("..", "").replace("\\", "")
+
+def validate_file_path(file_path):
+    """
+    Valida la ruta del archivo para asegurar que es una ruta permitida.
+    """
+    # Aquí puedes añadir lógica para verificar que la ruta esté en un directorio permitido
+    return os.path.abspath(file_path)
+
 def main(file_path, text_to_replace, new_text):
-    logging.info('Processing local PowerPoint file.')
 
     if not file_path or not text_to_replace or not new_text:
-        print("Por favor especifica la ruta del archivo, el texto a reemplazar y el nuevo texto")
-        return
+        return "Por favor especifica la ruta del archivo, el texto a reemplazar y el nuevo texto"
+
+    # Sanitizar entradas
+    file_path = sanitize_input(file_path)
+    text_to_replace = sanitize_input(text_to_replace)
+    new_text = sanitize_input(new_text)
+
+    # Validar y obtener la ruta completa del archivo
+    try:
+        file_path = validate_file_path(file_path)
+    except Exception as e:
+        logging.error(f"Invalid file path: {e}")
+        return f"Error en la ruta del archivo: {e}"
 
     # Leer el archivo PowerPoint desde el directorio local
     try:
         ppt = Presentation(file_path)
     except Exception as e:
-        print(f"Error al leer el archivo PowerPoint: {e}")
-        return
+        logging.error(f"Error al leer el archivo PowerPoint: {e}")
+        return f"Error al leer el archivo PowerPoint: {e}"
 
     # Reemplazar texto en las diapositivas
     for slide in ppt.slides:
@@ -28,7 +53,6 @@ def main(file_path, text_to_replace, new_text):
                     for run in paragraph.runs:
                         if text_to_replace == run.text:
                             run.text = run.text.replace(text_to_replace, new_text)
-                            run.font
                             run.font.bold = True  # Establecer negrilla
                             run.font.color.rgb = RGBColor(187, 207, 0)
 
@@ -36,18 +60,22 @@ def main(file_path, text_to_replace, new_text):
     image_files = []
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
     for i, slide in enumerate(ppt.slides):
-        image = slide_to_image(slide, ppt.slide_width, ppt.slide_height)
-        img_path = f"slide_{i}_{timestamp}.jpg"
-        image.save(img_path, 'JPEG')
-        image_files.append(img_path)
+        try:
+            image = slide_to_image(slide, ppt.slide_width, ppt.slide_height)
+            unique_filename = f"slide_{i}_{uuid.uuid4().hex}.jpg"
+            image.save(unique_filename, 'JPEG')
+            image_files.append(unique_filename)
+            logging.info(f"Imagen guardada en: {unique_filename}")
+        except Exception as e:
+            logging.error(f"Error al guardar la imagen: {e}")
+            return f"Error al guardar la imagen: {e}"
 
-        print(f"Imagen guardada en: {img_path}")
-
-    print("Proceso completado, las imágenes se han guardado en el directorio local")
+    logging.info("Proceso completado, las imágenes se han guardado en el directorio local")
+    return "Proceso completado, las imágenes se han guardado en el directorio local"
 
 def slide_to_image(slide, slide_width, slide_height):
     # Convertir las dimensiones de puntos a píxeles
-    dpi = 96  # densidad de píxeles
+    dpi = 96 
     width_px = int(slide_width * dpi / Pt(72))
     height_px = int(slide_height * dpi / Pt(72))
 
@@ -108,11 +136,11 @@ def slide_to_image(slide, slide_width, slide_height):
 
     return img
 
-
 if __name__ == "__main__":
     # Variables para prueba
     file_path = "C:/dev projects/haceb/tarjetaBienvenida/welcomecard/plantilla_bienvenida.pptx"
     text_to_replace = "Nombre"
     new_text = "Mateo Carvajal Vergara"
 
-    main(file_path, text_to_replace, new_text)
+    result = main(file_path, text_to_replace, new_text)
+    print(result)
