@@ -8,17 +8,12 @@ from pptx.dml.color import RGBColor
 from PIL import Image, ImageDraw, ImageFont
 from datetime import datetime
 
+#Sanitizar la entrada para prevenir ataques de inyección.
 def sanitize_input(input_string):
-    """
-    Sanitiza la entrada para prevenir ataques de inyección.
-    """
     return input_string.replace("..", "").replace("\\", "")
 
+#Valida la ruta del archivo para asegurar que es una ruta permitida.
 def validate_file_path(file_path):
-    """
-    Valida la ruta del archivo para asegurar que es una ruta permitida.
-    """
-    # Aquí puedes añadir lógica para verificar que la ruta esté en un directorio permitido
     return os.path.abspath(file_path)
 
 def main(file_path, text_to_replace, new_text):
@@ -58,7 +53,6 @@ def main(file_path, text_to_replace, new_text):
 
     # Guardar cada diapositiva como imagen JPEG
     image_files = []
-    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
     for i, slide in enumerate(ppt.slides):
         try:
             image = slide_to_image(slide, ppt.slide_width, ppt.slide_height)
@@ -137,10 +131,6 @@ def slide_to_image(slide, slide_width, slide_height):
     return img
 
 if __name__ == "__main__":
-    # Variables para prueba
-    file_path = "path"
-    text_to_replace = "text to replace"
-    new_text = "new text"
 
     result = main(file_path, text_to_replace, new_text)
     print(result)
